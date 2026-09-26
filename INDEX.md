@@ -4,10 +4,11 @@ A shared index of interesting Jev projects, connections between them, and ideas 
 
 ## Projects
 
-No projects recorded yet. The first project gets ID `P001`.
+One project recorded. Next project ID: `P002`.
 
 | ID | Project | What makes it interesting | Mechanisms | Research task | Source |
 | --- | --- | --- | --- | --- | --- |
+| P001 | [jevgrep](research/P001-jevgrep.md) | Uses Jev to select source context before a coding agent implements a change; published cost savings include a solve-rate tradeoff. | Hierarchical discovery; relevance classification; source selection | This inventory task; task link pending | [X announcement](https://x.com/dzhng/status/2103920741481848861), [repository](https://github.com/dzhng/jevgrep) |
 
 ## Connections
 
@@ -25,7 +26,15 @@ Unknowns: [What still needs checking, if anything.]
 
 ## Ideas to explore
 
-No ideas recorded yet. Proposed combinations remain hypotheses until tested.
+### I001 — Find the missing dependency before stopping research
+
+Idea: After selecting source context, check whether named dependencies or related implementations remain unexplored, and request a targeted second pass.
+Inspired by: P001's separation of useful file locations from selected source; its documented risk of incomplete discovery. This is a research direction, not a claim of novelty over jevgrep's existing follow-up behavior.
+Unknown: Whether an additional pass improves coverage enough to justify its cost.
+Smallest test: On one public repository question with a known cross-file dependency, compare selected evidence with and without the extra check; record missed dependencies, total retrieval cost, and downstream correctness.
+Status: Untested
+
+Proposed combinations remain hypotheses until tested.
 
 Use this format:
 

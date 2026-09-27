@@ -6,9 +6,9 @@ button, input, select, textarea { font-family: var(--notebook-font); font-weight
 a { color: #0000ee; }
 a:visited { color: #551a8b; }
 header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; border-bottom: 1px solid #888; padding-bottom: 8px; }
-.brand { font-weight: bold; }
+.brand { font-weight: 400; }
 nav { display: flex; flex-wrap: wrap; gap: 12px; }
-nav a[aria-current] { font-weight: bold; }
+nav a[aria-current] { font-weight: 400; }
 #project-count::before { content: "("; }
 #project-count::after { content: ")"; }
 main { padding-bottom: 24px; }
@@ -22,18 +22,18 @@ main { padding-bottom: 24px; }
 .project-entry { border-top: 1px solid #aaa; }
 .project-entry:last-child { border-bottom: 1px solid #aaa; }
 .project-card { display: flex; align-items: baseline; gap: 12px; width: 100%; padding: 10px 0; border: 0; border-radius: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
-.project-id { font: 13px monospace; flex-shrink: 0; }
+.project-id { font: 400 13px var(--notebook-font); flex-shrink: 0; }
 .row-content { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
-.project-title { color: #0000ee; text-decoration: underline; font-weight: bold; }
+.project-title { color: #0000ee; text-decoration: underline; font-weight: 400; }
 .project-card.selected .project-title { color: #551a8b; }
 .project-summary { overflow-wrap: anywhere; }
 .tags { font-size: 14px; }
 .tags span + span::before { content: " · "; }
-.row-toggle { font-family: monospace; padding-right: 4px; }
+.row-toggle { font-family: var(--notebook-font); padding-right: 4px; }
 .document { overflow-wrap: anywhere; }
 .project-entry > .document { margin: 0 0 20px 48px; border-top: 1px dotted #aaa; padding-top: 12px; }
 .note-meta { display: flex; flex-wrap: wrap; gap: 4px 20px; font-size: 13px; }
-.note-meta span:last-child { font-family: monospace; }
+.note-meta span:last-child { font-family: var(--notebook-font); }
 .detail-status { margin-top: 12px; font-style: italic; }
 .note-footer { border-top: 1px solid #aaa; margin-top: 24px; padding-top: 12px; }
 pre { white-space: pre-wrap; }

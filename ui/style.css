@@ -1,6 +1,8 @@
 /* Plain HTML notebook, in the spirit of the early web. */
-:root { color-scheme: light; }
-body { margin: 8px; color: #000; background: #fff; font: 16px/1.35 "Times New Roman", Times, serif; }
+:root { color-scheme: light; --notebook-font: "Google Sans", "Roboto", Arial, sans-serif; }
+body { margin: 8px; color: #000; background: #fff; font: 400 16px/1.35 var(--notebook-font); }
+h1, h2, h3, h4, h5, h6 { font-family: var(--notebook-font); font-weight: 400; }
+button, input, select, textarea { font-family: var(--notebook-font); font-weight: 400; }
 a { color: #0000ee; }
 a:visited { color: #551a8b; }
 header { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; border-bottom: 1px solid #888; padding-bottom: 8px; }
@@ -52,7 +54,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .research-body { min-width: 0; }
 .personal-notes { border-left: 1px solid #aaa; padding-left: 16px; min-width: 0; }
 .personal-notes h3 { margin-top: 0; }
-.personal-notes textarea { width: 100%; box-sizing: border-box; resize: vertical; font: 16px/1.4 "Times New Roman", Times, serif; }
+.personal-notes textarea { width: 100%; box-sizing: border-box; resize: vertical; font: 400 16px/1.4 var(--notebook-font); }
 .note-save-status { overflow-wrap: anywhere; }
 @media (max-width: 850px) {
   .research-columns { grid-template-columns: 1fr; }

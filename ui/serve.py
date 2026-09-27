@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Local, read-only research notebook. No third-party dependencies."""
+"""Local research notebook with personal notes. No third-party dependencies."""
 import argparse
 import json
 import re
+import sqlite3
+from notes import Notes, Conflict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -38,8 +40,61 @@ def inventory():
 
 
 class Handler(BaseHTTPRequestHandler):
+    def json_response(self, status, payload):
+        body = json.dumps(payload).encode()
+        self.send_response(status)
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Cache-Control', 'no-store')
+        self.send_header('X-Content-Type-Options', 'nosniff')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def local_request(self):
+        allowed = {f'127.0.0.1:{self.server.server_port}', f'localhost:{self.server.server_port}'}
+        host = self.headers.get('Host', '')
+        origin = self.headers.get('Origin')
+        return host in allowed and (origin is None or origin == 'http://' + host)
+
+    def note_id(self):
+        match = re.fullmatch(r'/api/notes/(P\d+)', urlsplit(self.path).path)
+        return match[1] if match else None
+
+    def do_PUT(self):
+        if not self.local_request():
+            return self.json_response(403, {'error': 'Local same-origin requests only.'})
+        project_id = self.note_id()
+        if not project_id or project_id not in {p['id'] for p in inventory()['projects']}:
+            return self.json_response(404, {'error': 'Unknown project.'})
+        if self.headers.get('Content-Type', '').split(';')[0] != 'application/json':
+            return self.json_response(415, {'error': 'Expected JSON.'})
+        try:
+            size = int(self.headers.get('Content-Length', '0'))
+            if not 0 < size <= 1048576:
+                return self.json_response(413, {'error': 'Note request too large or empty.'})
+            payload = json.loads(self.rfile.read(size))
+            if not isinstance(payload, dict) or not isinstance(payload.get('body'), str) or type(payload.get('revision')) is not int or payload['revision'] < 0 or len(payload['body']) > 100000:
+                return self.json_response(400, {'error': 'Expected text up to 100,000 characters and a revision.'})
+            note = self.server.notes.save(project_id, payload['body'], payload['revision'])
+            return self.json_response(200, note)
+        except (ValueError, UnicodeError):
+            return self.json_response(400, {'error': 'Invalid JSON request.'})
+        except Conflict:
+            return self.json_response(409, {'error': 'Another tab saved a newer version. Your draft has been kept.'})
+        except sqlite3.Error:
+            return self.json_response(503, {'error': 'Notes could not be saved. Your draft has been kept; try again.'})
+
     def do_GET(self):
+        if not self.local_request():
+            return self.json_response(403, {'error': 'Local same-origin requests only.'})
         path = urlsplit(self.path).path
+        if self.note_id():
+            if self.note_id() not in {p['id'] for p in inventory()['projects']}:
+                return self.json_response(404, {'error': 'Unknown project.'})
+            try:
+                return self.json_response(200, self.server.notes.get(self.note_id()))
+            except sqlite3.Error:
+                return self.json_response(503, {'error': 'Notes could not be loaded.'})
         if path == '/api/inventory':
             try:
                 body = json.dumps(inventory()).encode()
@@ -66,7 +121,9 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--port', type=int, default=8765)
+    parser.add_argument('--notes-db', type=Path, default=ROOT / '.local' / 'notes.sqlite3')
     args = parser.parse_args()
     server = ThreadingHTTPServer(('127.0.0.1', args.port), Handler)
+    server.notes = Notes(args.notes_db)
     print(f'Jev notebook: http://127.0.0.1:{args.port}', flush=True)
     server.serve_forever()

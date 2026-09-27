@@ -83,10 +83,11 @@ function renderResults() {
   document.querySelector('#result-count').textContent=`${projects.length} of ${data.projects.length} projects`;
   document.querySelector('#project-list').innerHTML=projects.length?projects.map(p=>`<section class="project-entry"><button class="project-card ${p.id===selected?'selected':''}" id="toggle-${escapeHTML(p.id)}" data-id="${escapeHTML(p.id)}" aria-expanded="${p.id===selected}" aria-controls="research-${escapeHTML(p.id)}"><span class="project-id">${escapeHTML(p.id)}</span><span class="row-content"><span class="project-title">${escapeHTML(p.name)}</span><span class="project-summary">${escapeHTML(p.summary)}</span><span class="tags">${p.mechanisms.map(m=>`<span>${escapeHTML(m)}</span>`).join('')}</span></span><span class="row-toggle" aria-hidden="true">${p.id===selected?'−':'+'}</span></button><article id="research-${escapeHTML(p.id)}" class="document" aria-labelledby="toggle-${escapeHTML(p.id)}" ${p.id===selected?'':'hidden'}>${p.id===selected?researchHTML(p):''}</article></section>`).join(''):'<div class="empty"><h2>No matching projects</h2><p>Try a different term or choose all mechanisms.</p><button id="clear">Clear filters</button></div>';
   document.querySelectorAll('[data-id]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.id;selected=selected===id?'':id;history.replaceState(null,'',selected?'#projects/'+selected:'#projects');renderResults();document.getElementById('toggle-'+id).focus({preventScroll:true});}));
+  document.querySelectorAll('[data-notepad]').forEach(mountNotepad);
   document.querySelector('#clear')?.addEventListener('click',()=>{query='';mechanism='';history.replaceState(null,'','#projects');render();});
 }
 function researchHTML(project) {
-  return `<div class="note-meta"><span>RESEARCH NOTE · ${escapeHTML(project.id)}</span><span>${escapeHTML(project.path||'Note pending')}</span></div><div class="detail-status">${escapeHTML(project.status)}</div>${markdown(project.research)}<footer class="note-footer"><strong>Research task</strong><p>${inline(project.task)}</p><strong>Original sources</strong><p>${inline(project.sources)}</p></footer>`;
+  return `<div class="research-columns"><div class="research-body"><div class="note-meta"><span>RESEARCH NOTE · ${escapeHTML(project.id)}</span><span>${escapeHTML(project.path||'Note pending')}</span></div><div class="detail-status">${escapeHTML(project.status)}</div>${markdown(project.research)}<footer class="note-footer"><strong>Research task</strong><p>${inline(project.task)}</p><strong>Original sources</strong><p>${inline(project.sources)}</p></footer></div><aside class="personal-notes" data-notepad="${escapeHTML(project.id)}" aria-label="My notes for ${escapeHTML(project.id)}"></aside></div>`;
 }
 async function load() {
   const button=document.querySelector('#refresh');button.disabled=true;button.textContent='Refreshing…';
@@ -97,3 +98,65 @@ async function load() {
   finally {button.disabled=false;button.textContent='Refresh notes';}
 }
 document.querySelector('#refresh').addEventListener('click',load);window.addEventListener('hashchange',render);load();
+
+const notepads = new Map();
+function noteStatus(state) {
+  return state.message || (state.body !== state.saved ? 'Unsaved changes' : state.updated_at ? 'Saved · ' + new Date(state.updated_at).toLocaleString() : 'No saved notes yet.');
+}
+async function mountNotepad(panel) {
+  const id = panel.dataset.notepad;
+  panel.innerHTML = '<h3>My notes</h3><p>Loading notes…</p>';
+  if (!notepads.has(id)) {
+    try {
+      const response = await fetch('/api/notes/' + id);
+      if (!response.ok) throw Error('Could not load notes.');
+      const note = await response.json();
+      if (!notepads.has(id)) notepads.set(id, {...note, saved:note.body, busy:false, message:''});
+    } catch (error) {
+      if (panel.isConnected) {
+        panel.innerHTML = '<h3>My notes</h3><p>Could not load notes.</p><button type="button">Retry</button>';
+        panel.querySelector('button').onclick = () => mountNotepad(panel);
+      }
+      return;
+    }
+  }
+  if (!panel.isConnected) return;
+  const state = notepads.get(id);
+  panel.innerHTML = `<h3><label for="notes-${id}">My notes</label></h3><textarea id="notes-${id}" rows="20" maxlength="100000" placeholder="Your thoughts, questions, and things to try…">${escapeHTML(state.body)}</textarea><p><button type="button" class="save-note">Save notes</button> <button type="button" class="reload-note">Load saved version</button></p><p class="note-save-status" role="status"></p><p><small>Saved on this computer. Not synced through Git.</small></p>`;
+  const textarea = panel.querySelector('textarea');
+  const status = panel.querySelector('.note-save-status');
+  const save = panel.querySelector('.save-note');
+  const reload = panel.querySelector('.reload-note');
+  const update = () => {
+    status.textContent = noteStatus(state);
+    save.disabled = state.busy || state.body === state.saved;
+    reload.disabled = state.busy;
+  };
+  update();
+  textarea.oninput = () => {state.body=textarea.value;state.message='';update();};
+  save.onclick = async () => {
+    const body = state.body;
+    state.busy=true;state.message='Saving…';update();
+    try {
+      const response = await fetch('/api/notes/' + id, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({body,revision:state.revision})});
+      const result = await response.json();
+      if (!response.ok) throw Error(result.error || 'Could not save notes.');
+      state.saved=body;state.revision=result.revision;state.updated_at=result.updated_at;state.message='';
+    } catch(error) {state.message=error.message + ' Copy your draft before loading the saved version.';}
+    finally {
+      state.busy=false;
+      const current = document.querySelector(`[data-notepad="${id}"]`);
+      if (current === panel) update();
+      else if (current) mountNotepad(current);
+    }
+  };
+  reload.onclick = () => {
+    if (state.body !== state.saved && !confirm('Discard this unsaved draft and load the saved version?')) return;
+    notepads.delete(id);mountNotepad(panel);
+  };
+}
+window.addEventListener('beforeunload', event => {
+  if ([...notepads.values()].some(state => state.busy || state.body !== state.saved)) {
+    event.preventDefault();event.returnValue='';
+  }
+});

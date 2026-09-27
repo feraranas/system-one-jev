@@ -43,8 +43,22 @@ From the repository directory, run with Python 3.9 or later:
 python3 ui/serve.py
 ```
 
-Open [the local notebook](http://127.0.0.1:8765). It includes project search, mechanism filters, full research notes, connections, and ideas. Click **Refresh notes** after pulling or editing files. The UI reads `INDEX.md` and its linked `research/*.md` files; it does not save edits or create a second data store.
+Open [the local notebook](http://127.0.0.1:8765). It includes project search, mechanism filters, full research notes, connections, and ideas. Click **Refresh notes** after pulling or editing files. Research still comes from `INDEX.md` and its linked `research/*.md` files. Each expanded project also has a personal notepad stored separately in SQLite.
 
 The server binds only to your computer's loopback address and exposes only the UI and inventory data. Stop it with Ctrl+C. Use `python3 ui/serve.py --port 8766` if the default port is occupied. On another computer, pull the repository and run the same command. Nothing is publicly hosted.
 
 The Markdown reader supports headings, paragraphs, lists, tables, fenced code, links, inline code, and bold text. Keep project rows in the existing index table format and separate mechanisms with semicolons. Add a `Status:` line to research notes to display their evidence status; notes without one show “Status not recorded.”
+
+## My notes
+
+Expand a project and use **My notes**, then **Save notes**. There is one notepad per project ID. Notes appear beside the research on wide screens and below it on small screens. The save indicator confirms when a write succeeds.
+
+The database is `.local/notes.sqlite3`, created automatically and excluded from Git. Saved notes survive restarts; Git clone/pull does **not** transfer them. Unsaved drafts remain in memory while switching projects, filters, or views. Closing/reloading the page prompts if a draft is unsaved; save before leaving. **Load saved version** fetches the current database copy and asks before discarding a changed draft.
+
+If another tab saved first, the server rejects the stale save and keeps your draft in the editor. Copy it somewhere safe, load the saved version, and reconcile the two before saving again. Notes are plain text, never executed as HTML.
+
+To back up or move notes, stop the server and copy `.local/notes.sqlite3` to a safe location. Restore it with the server stopped. An alternative location can be supplied with `--notes-db /absolute/path/notes.sqlite3`. Do not overwrite an existing database when migrating without first backing it up.
+
+This is a local, single-user feature. The server checks local Host/Origin values and remains bound to loopback. Hosting at a future domain requires authentication, HTTPS, a production server, persistent storage, and backups; DNS alone does not make this local server ready for public use. The existing Markdown inventory and SQLite notes can both move to that server.
+
+Validation: `python3 -m unittest discover -s ui -p 'test_*.py'` tests persistence, project isolation, revision conflicts, and HTTP write boundaries using temporary databases.

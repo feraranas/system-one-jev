@@ -47,3 +47,14 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .project-card { gap: 8px; }
   .project-entry > .document { margin-left: 0; }
 }
+
+.research-columns { display: grid; grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr); gap: 24px; }
+.research-body { min-width: 0; }
+.personal-notes { border-left: 1px solid #aaa; padding-left: 16px; min-width: 0; }
+.personal-notes h3 { margin-top: 0; }
+.personal-notes textarea { width: 100%; box-sizing: border-box; resize: vertical; font: 16px/1.4 "Times New Roman", Times, serif; }
+.note-save-status { overflow-wrap: anywhere; }
+@media (max-width: 850px) {
+  .research-columns { grid-template-columns: 1fr; }
+  .personal-notes { border-left: 0; border-top: 1px solid #aaa; padding: 16px 0 0; }
+}

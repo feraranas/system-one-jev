@@ -4,6 +4,8 @@ Creator: David (@dzhng)
 
 Reviewed: 2026-09-26
 
+Status: Documentation reviewed — not independently tested
+
 Review depth: Announcement and published documentation/results inspected. No installation, source-code audit, or independent benchmark run.
 
 ## Sources
@@ -50,7 +52,7 @@ These are published results, not our measurements. The project is catalogued as 
 
 ## Connections and questions
 
-- P002 provides a conceptual comparison: code-context selection versus transaction categorization. P002 is a design prototype, not a working Jev integration; see the evidence-qualified connection in [the index](../INDEX.md).
+- P002 provides a conceptual comparison: code-context selection versus transaction categorization. P002 is a design prototype, not a working Jev integration; see the evidence-qualified connection in [the index](../INDEX.md#connections).
 - Candidate to investigate later: `keltokhy/jgrep`, mentioned by another participant in the announcement replies; not reviewed or accepted as a connection.
 - What is the total cost including Jev on a fresh task set?
 - How does relevance selection affect missed dependencies and final correctness?
@@ -58,4 +60,4 @@ These are published results, not our measurements. The project is catalogued as 
 
 ## Idea inspired
 
-See I001 in [the index](../INDEX.md): evaluate an explicit missing-dependency check. Its overlap with existing follow-up retrieval must be established before calling it novel.
+See I001 in [the index](../INDEX.md#ideas-to-explore): evaluate an explicit missing-dependency check. Its overlap with existing follow-up retrieval must be established before calling it novel.

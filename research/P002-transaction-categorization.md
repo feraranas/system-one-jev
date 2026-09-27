@@ -52,4 +52,4 @@ The author describes iterating the design in code with Opus 5.5, working through
 
 ## Idea inspired
 
-See I002 in [the index](../INDEX.md): a classification result that includes its source evidence and an explicit unresolved state. The usefulness of that design is a hypothesis; novelty has not been investigated.
+See I002 in [the index](../INDEX.md#ideas-to-explore): a classification result that includes its source evidence and an explicit unresolved state. The usefulness of that design is a hypothesis; novelty has not been investigated.

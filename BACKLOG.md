@@ -14,11 +14,11 @@ When this is picked up:
 - Save candidate discoveries separately from researched entries.
 - Notify only for meaningful new discoveries, failures, or required user action; stay quiet on unchanged runs.
 
-## Inventory UI — proposed next step
+## Inventory UI — first local version
 
 Goal: browse the inventory and inspect evidence, connections, and ideas while continuing to conduct research through tasks.
 
-Recommended first version:
+Scope:
 
 - Searchable project list with mechanism and evidence-status filters.
 - Project detail view containing workflow, sources, published claims, limitations, connections, and ideas.
@@ -29,4 +29,4 @@ Recommended first version:
 
 Alternatives: a single long rendered index is cheaper but harder to browse as it grows; a graph-first interface becomes useful when enough real connections exist. Neither requires introducing a database now.
 
-UI implementation and hosting choice remain pending design review. A local preview can be reviewed before deciding on private hosting for access across computers.
+The local read-only UI is in `ui/`; see README.md for launch instructions. Private hosting remains a possible later step. Other computers can clone the repository and run the same UI locally.

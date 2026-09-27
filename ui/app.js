@@ -37,12 +37,37 @@ function markdown(text) {
   }
   close(); if(code) html+='</code></pre>'; return html;
 }
+function synthesisRows(text, view) {
+  const footer = 'Proposed combinations remain hypotheses until tested.';
+  const hasFooter = text.includes(footer);
+  const content = text.replace(footer, '').trim();
+  const sections = [...content.matchAll(/^### (.+)\n([\s\S]*?)(?=^### |$(?![\s\S]))/gm)];
+  if (!sections.length) return markdown(content || 'Nothing recorded yet.');
+  const intro = content.slice(0, sections[0].index);
+  return markdown(intro) + '<div class="synthesis-list">' + sections.map((section, i) => {
+    const id = `${view}-${i}`;
+    return `<section class="project-entry"><button class="project-card" id="toggle-${id}" data-synthesis="${id}" aria-expanded="false" aria-controls="research-${id}"><span class="row-content"><span class="project-title">${escapeHTML(section[1])}</span></span><span class="row-toggle" aria-hidden="true">+</span></button><article class="document" id="research-${id}" aria-labelledby="toggle-${id}" hidden>${markdown(section[2])}</article></section>`;
+  }).join('') + '</div>' + (hasFooter ? markdown(footer) : '');
+}
+function bindSynthesisRows() {
+  main.querySelectorAll('[data-synthesis]').forEach(button => button.addEventListener('click', () => {
+    const opening = button.getAttribute('aria-expanded') !== 'true';
+    main.querySelectorAll('[data-synthesis]').forEach(row => {
+      const expanded = row === button && opening;
+      row.setAttribute('aria-expanded', String(expanded));
+      row.classList.toggle('selected', expanded);
+      row.querySelector('.row-toggle').textContent = expanded ? '−' : '+';
+      document.getElementById(row.getAttribute('aria-controls')).hidden = !expanded;
+    });
+  }));
+}
 function render() {
   if (!data) return;
   const parts=location.hash.slice(1).split('/'), view=['projects','connections','ideas'].includes(parts[0])?parts[0]:'projects';
   document.querySelectorAll('[data-view]').forEach(a=>{if(a.dataset.view===view)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   if(view!=='projects') {
-    main.innerHTML=`<div class="page-heading"><p class="eyebrow">THE GROWING PICTURE</p><h1>${view==='ideas'?'Ideas to explore':'Connections'}</h1><p>${view==='ideas'?'Possibilities, assumptions, and the next small experiment.':'Relationships between projects, with their evidence and unknowns.'}</p></div><article class="document synthesis">${markdown(data[view] || 'Nothing recorded yet.')}</article>`;
+    main.innerHTML=`<div class="page-heading"><p class="eyebrow">THE GROWING PICTURE</p><h1>${view==='ideas'?'Ideas to explore':'Connections'}</h1><p>${view==='ideas'?'Possibilities, assumptions, and the next small experiment.':'Relationships between projects, with their evidence and unknowns.'}</p></div><div class="synthesis">${synthesisRows(data[view] || '', view)}</div>`;
+    bindSynthesisRows();
     return;
   }
   if(parts[1] && data.projects.some(p=>p.id===parts[1])) {selected=parts[1];query='';mechanism='';}

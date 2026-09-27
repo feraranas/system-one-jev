@@ -4,7 +4,7 @@ A shared index of interesting Jev projects, connections between them, and ideas 
 
 ## Projects
 
-Seventeen entries recorded, including tools, experiments, demos, and workflows. Next project ID: `P018`.
+Eighteen entries recorded, including tools, experiments, demos, and workflows. Next project ID: `P019`.
 
 | ID | Project | What makes it interesting | Mechanisms | Research task | Source |
 | --- | --- | --- | --- | --- | --- |
@@ -26,6 +26,8 @@ Seventeen entries recorded, including tools, experiments, demos, and workflows. 
 | P015 | [JevPilot driving simulator](research/P015-jevpilot.md) | Chooses among locally generated driving paths in a visual simulation. | Candidate trajectories; explicit policy; simulation | This inventory task; task link pending | [Announcement](https://x.com/jpschroeder/status/2100698502531514761), [Discovery post](https://x.com/moritzkremb/status/2100896019584352520), [Repository](https://github.com/standardagents/jevpilot) |
 | P016 | [App testing with Jev and OpenCode](research/P016-app-testing.md) | Explores fast application interaction within a coding-agent testing workflow. | Application testing; agent interaction | This inventory task; task link pending | [Announcement and demo](https://x.com/Neriousy/status/2100287208166969746) |
 | P017 | [Smart copy/paste / Jaste](research/P017-jaste.md) | Uses contextual selection to choose a clipboard match for smart paste. | Contextual selection; clipboard retrieval | This inventory task; task link pending | [Announcement and beta follow-up](https://x.com/marcus_lowe/status/2101476399488160013), [Product site](https://jaste.app) |
+
+| P018 | [Jev + Opus decision harness](research/P018-jev-opus-harness.md) | Applies bounded selection to context, worker routing, recovery, and checks; creator-reported savings lack a reproducible benchmark. | relevance classification; candidate selection; explicit policy; worker routing | This inventory task; task link pending | [Workflow post](https://x.com/zodchiii/status/2103881136149848430), [quoted guide](https://x.com/i/article/2102703913195729398) |
 
 ## Connections
 
@@ -134,6 +136,20 @@ Basis: P007 documentation and P017 product description; abstraction inferred.
 Evidence: [P007](research/P007-keystroke-oracle.md), [P017](research/P017-jaste.md).
 Unknowns: Which contextual features help enough to justify their privacy and latency costs.
 
+### P001 ↔ P018 — Context selection as one stage of a wider harness
+
+Reason: P001 selects source context for a coding agent; P018 describes selecting project notes before context loading as one of several decision points.
+Basis: P001 published tool documentation and P018 creator account; our architectural comparison, not evidence that P018 uses jevgrep.
+Evidence: [P001](research/P001-jevgrep.md), [P018](research/P018-jev-opus-harness.md).
+Unknowns: Whether P018's context selection preserves dependency coverage and how much it contributes to the claimed savings.
+
+### P005 ↔ P018 — Typed choices need a harness that prepares and validates options
+
+Reason: P005 guides explicit judgment contracts and application policy; P018 describes the harness preparing alternatives for Jev while Opus performs harder reasoning.
+Basis: Shared design principle in published descriptions; P018 implementation remains uninspected.
+Evidence: [P005](research/P005-typesafe-agent-skill.md), [P018](research/P018-jev-opus-harness.md).
+Unknowns: Actual schemas, validation rules, fallback behavior, and whether agent decisions comply with those boundaries.
+
 Use this format:
 
 ```text
@@ -200,6 +216,14 @@ Idea: Give a fast browser actor a separate, task-specific assertion after each m
 Inspired by: P013's bounded actions and P016's app-testing demo; P006 suggests searchable failure signals.
 Unknown: Whether a separate check detects failures the actor misses without merely repeating its assumptions.
 Smallest test: Use a local form with a deliberately broken save handler; compare click completion with an assertion that checks the saved record. Record false passes and added latency.
+Status: Untested
+
+### I008 — Measure each harness decision before combining them
+
+Idea: Evaluate context selection, worker routing, recovery selection, and focused-check ordering independently before attributing savings to the combined workflow.
+Inspired by: P018's multi-stage harness and P001's documented cost-versus-solve-rate tradeoff. This is an evaluation proposal, not a novelty claim.
+Unknown: Whether apparent savings survive equal-quality comparisons after retries, escalations, and all model calls are counted.
+Smallest test: On five fixed local coding tasks, compare a baseline with context selection alone and worker routing alone. Keep acceptance checks fixed; record task success, wall time, total model cost, and rework before trying combinations.
 Status: Untested
 
 Proposed combinations remain hypotheses until tested.

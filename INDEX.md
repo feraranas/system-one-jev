@@ -4,7 +4,7 @@ A shared index of interesting Jev projects, connections between them, and ideas 
 
 ## Projects
 
-Six entries recorded, including tools, experiments, and workflows. Next project ID: `P007`.
+Seventeen entries recorded, including tools, experiments, demos, and workflows. Next project ID: `P018`.
 
 | ID | Project | What makes it interesting | Mechanisms | Research task | Source |
 | --- | --- | --- | --- | --- | --- |
@@ -14,6 +14,18 @@ Six entries recorded, including tools, experiments, and workflows. Next project 
 | P004 | [Lev](research/P004-lev.md) | Independent Qwen-based decision model with a published comparison harness; not an official open release of Jev. | Typed judgments; bounded answer readout; model comparison | This inventory task; task link pending | [X post](https://x.com/interfaze_ai/status/2103523046774771805), [repository](https://github.com/InterfazeAI/lev) |
 | P005 | [TypeSafe agent skill](research/P005-typesafe-agent-skill.md) | Guides coding agents to design typed judgments, batch independent questions, and keep actions in code. | Agent skill; parallel judgments; explicit policy | This inventory task; task link pending | [Discovery post](https://x.com/Mnilax/status/2103901384135295088), [official repository](https://github.com/typesafe-ai/skills) |
 | P006 | [Named signals for agent-trace search](research/P006-agent-trace-signals.md) | Keeps satisfaction, corrections, and other signals separately searchable instead of reducing each session to one label. | Named judgment vectors; parallel judgments; trace analysis | This inventory task; task link pending | [X post](https://x.com/annabellschfr/status/2103723431711690768), [article](https://x.com/annabellschfr/article/2102799529074459025) |
+
+| P007 | [Keystroke oracle / Launcher](research/P007-keystroke-oracle.md) | Local candidates are reranked as you type, using recency evidence rather than filename matching alone. | Incremental intent; candidate ranking; explicit execution | This inventory task; task link pending | [Submitted repository](https://github.com/dabit3/jev-experiments), [Discovery post](https://x.com/moritzkremb/status/2100895906103206250) |
+| P008 | [Context compaction](research/P008-context-compaction.md) | Selectively retains tool history verbatim instead of generating a replacement summary. | relevance classification; context pruning; parallel judgments | This inventory task; task link pending | [Announcement](https://x.com/tamarajtran/status/2100694549362553153), [Resolved repository](https://github.com/tamaratran/fast-jev-compaction) |
+| P009 | [Drawing with voice](research/P009-voice-drawing.md) | Combines speech and pointing context to select and manipulate canvas objects. | Multimodal intent; candidate selection; canvas actions | This inventory task; task link pending | [Drawing demo](https://x.com/jackcheng/status/2100729670991802386), [Author follow-up](https://x.com/jackcheng/status/2100749778787131649) |
+| P010 | [Natural-language database search / pg-jev](research/P010-pg-jev.md) | Places semantic judgments inside SQL filtering and ranking without an embedding index. | Semantic predicates; row batching; caching | This inventory task; task link pending | [Announcement](https://x.com/iam_zachi/status/2100749651448054136), [Repository](https://github.com/realZachi/pg-jev) |
+| P011 | [Browser controlled with voice](research/P011-voice-browser.md) | Judges partial speech against page targets, then uses policy to act, wait, ask, or ignore. | Incremental intent; DOM candidates; explicit policy | This inventory task; task link pending | [Announcement](https://x.com/moritzkremb/status/2100577979021832365), [Repository](https://github.com/moritzkremb/jev-voice-browser) |
+| P012 | [Email classifier](research/P012-email-classifier.md) | Demonstrates inexpensive bulk labeling as a possible inbox triage primitive. | Batch classification; inbox triage | This inventory task; task link pending | [Announcement and demo](https://x.com/rileybrown/status/2100404532119269426) |
+| P013 | [Browser Use / jev-ultrafast](research/P013-browser-use-ultrafast.md) | Uses Jev for bounded browser decisions and a small generative model only when text is needed. | DOM candidates; speculative judgments; hybrid generation | This inventory task; task link pending | [Repository](https://github.com/browser-use/jev-ultrafast), [Announcement](https://x.com/gregpr07/status/2100411066966749359) |
+| P014 | [Trading bot / jev-trader](research/P014-jev-trader.md) | Separates rapid market judgments from order execution and deterministic position limits. | Time-bounded decisions; explicit policy; order execution | This inventory task; task link pending | [Announcement](https://x.com/jarrodwatts/status/2100356151468585346), [Repository](https://github.com/jarrodwatts/jev-trader) |
+| P015 | [JevPilot driving simulator](research/P015-jevpilot.md) | Chooses among locally generated driving paths in a visual simulation. | Candidate trajectories; explicit policy; simulation | This inventory task; task link pending | [Announcement](https://x.com/jpschroeder/status/2100698502531514761), [Discovery post](https://x.com/moritzkremb/status/2100896019584352520), [Repository](https://github.com/standardagents/jevpilot) |
+| P016 | [App testing with Jev and OpenCode](research/P016-app-testing.md) | Explores fast application interaction within a coding-agent testing workflow. | Application testing; agent interaction | This inventory task; task link pending | [Announcement and demo](https://x.com/Neriousy/status/2100287208166969746) |
+| P017 | [Smart copy/paste / Jaste](research/P017-jaste.md) | Uses contextual selection to choose a clipboard match for smart paste. | Contextual selection; clipboard retrieval | This inventory task; task link pending | [Announcement and beta follow-up](https://x.com/marcus_lowe/status/2101476399488160013), [Product site](https://jaste.app) |
 
 ## Connections
 
@@ -59,6 +71,69 @@ Basis: Proposed compatibility experiment based on repository claims, not a demon
 Evidence: [P004](research/P004-lev.md), [P005](research/P005-typesafe-agent-skill.md).
 Unknowns: Behavioral compatibility, calibration differences, supported inputs, and performance on our chosen workload.
 
+### P001 ↔ P008 — Selecting evidence before and during work
+
+Reason: P001 selects source context; P008 retains useful tool history. Both use relevance judgments to reduce the evidence a downstream agent sees.
+Basis: Documented workflows; our comparison, not a shared evaluation.
+Evidence: [P001](research/P001-jevgrep.md), [P008](research/P008-context-compaction.md).
+Unknowns: Whether fewer tokens preserve dependency facts and later task success.
+
+### P007 ↔ P011 — Intent can be judged before input is complete
+
+Reason: The launcher reranks on typing; the voice browser evaluates partial transcripts. Their execution boundaries differ: explicit Enter versus an act/wait/ask policy.
+Basis: Documented mechanisms; our comparison.
+Evidence: [P007](research/P007-keystroke-oracle.md), [P011](research/P011-voice-browser.md).
+Unknowns: How often early confidence reverses, and which readiness policy prevents premature actions.
+
+### P009 ↔ P011 — Grounding speech in visible targets
+
+Reason: Canvas pointing and browser page elements provide context for a spoken command.
+Basis: P009 visible demo frame and P011 documentation; shared abstraction inferred.
+Evidence: [P009](research/P009-voice-drawing.md), [P011](research/P011-voice-browser.md).
+Unknowns: P009 implementation details and correction behavior; no performance equivalence established.
+
+### P003 ↔ P010 — Precomputed features versus query-time semantic predicates
+
+Reason: P003 proposes reusable document dimensions; pg-jev evaluates language conditions within SQL queries.
+Basis: Published descriptions; architectural comparison inferred.
+Evidence: [P003](research/P003-named-dimension-embeddings.md), [P010](research/P010-pg-jev.md).
+Unknowns: Which repeated queries justify cached features rather than fresh judgments.
+
+### P002 ↔ P012 — Categories become a user-facing view
+
+Reason: P002 visualizes transaction categories; P012 reports email classification.
+Basis: Conceptual inference: P002 is a non-integrated prototype, P012 a creator-reported demo.
+Evidence: [P002](research/P002-transaction-categorization.md), [P012](research/P012-email-classifier.md).
+Unknowns: Label accuracy, ambiguity handling, and downstream action policies.
+
+### P011 ↔ P013 — Two ways to supply text in browser actions
+
+Reason: P011 selects literal transcript spans; P013 uses a small generative model for typing while Jev selects operations and targets.
+Basis: Documented architectural difference.
+Evidence: [P011](research/P011-voice-browser.md), [P013](research/P013-browser-use-ultrafast.md).
+Unknowns: Where extraction stops being sufficient, and the cost and correctness impact of generation.
+
+### P014 ↔ P015 — Model choices meet local control rules
+
+Reason: The trading repo has deadlines and position caps; the simulator has candidate geometry and collision handling.
+Basis: Documented separation of judgment and control; our cross-domain inference.
+Evidence: [P014](research/P014-jev-trader.md), [P015](research/P015-jevpilot.md).
+Unknowns: Failure behavior under delayed answers; similarity does not validate trading returns or real driving safety.
+
+### P013 ↔ P016 — Interaction can support testing but is not an assertion
+
+Reason: P013 documents a browser executor; P016 demonstrates app interaction under a testing label.
+Basis: Potential connection inferred; P016 model and assertion roles remain unknown.
+Evidence: [P013](research/P013-browser-use-ultrafast.md), [P016](research/P016-app-testing.md).
+Unknowns: What independent oracle establishes task success or detects a defect.
+
+### P007 ↔ P017 — Retrieve an existing item from intent and context
+
+Reason: The launcher chooses file candidates; Jaste chooses clipboard matches.
+Basis: P007 documentation and P017 product description; abstraction inferred.
+Evidence: [P007](research/P007-keystroke-oracle.md), [P017](research/P017-jaste.md).
+Unknowns: Which contextual features help enough to justify their privacy and latency costs.
+
 Use this format:
 
 ```text
@@ -92,7 +167,7 @@ Status: Untested
 Idea: Define a small set of named research questions, such as whether an entry has executable code, published measurements, or an explicit review path. Use the answers to suggest comparisons while showing supporting passages and unknown states.
 Inspired by: P003's document features and P006's multi-signal trace search.
 Unknown: Whether model-derived features improve discovery beyond manually maintained tags; missing evidence must not become a confident negative.
-Smallest test: Manually label the six current entries on four dimensions, then compare a proposed automated extraction against those labels and record disagreements. Do not automate scoring yet.
+Smallest test: Manually label P001–P006 on four dimensions, then compare a proposed automated extraction against those labels and record disagreements. Do not automate scoring yet.
 Status: Untested
 
 ### I004 — Compare backends on the same named questions
@@ -101,6 +176,30 @@ Idea: Use one fixed set of conversation-signal questions and compare Jev and Lev
 Inspired by: P004's independent backend, P005's judgment-design guidance, and P006's trace signals.
 Unknown: Whether compatible interfaces yield sufficiently comparable judgments, uncertainty, total cost, and latency. No interchangeability or cost advantage is assumed.
 Smallest test: Prepare ten synthetic conversations with reviewed labels, keep question definitions fixed, and compare outputs and end-to-end measurements. Model execution requires a separate experiment; none has been run.
+Status: Untested
+
+### I005 — Recoverable compaction with an evidence ledger
+
+Idea: When pruning tool history, retain a small pointer and reason for each removed result so a later missing-evidence check can recover the exact archived output rather than rerun a changing tool.
+Inspired by: P001's evidence selection and P008's selective compaction. This is an untested combination, not an established novelty claim.
+Unknown: Whether retrieval overhead is lower than simply keeping more history, and whether pointers reveal which omitted facts matter.
+Smallest test: Use a synthetic transcript with ten tool results and two facts needed later; compare summary, pruning, and pruning with recoverable pointers on answer correctness and context size.
+Status: Untested
+
+### I006 — Predict continuously, commit deliberately
+
+Idea: Expose a provisional target while typing or speaking, and require an explicit commit signal for consequential actions. Record target changes so readiness can be evaluated rather than inferred from one confidence score.
+Inspired by: P007's explicit Enter, P011's act/wait policy, and P009's pointed-at canvas objects.
+Unknown: Whether reduced false actions outweigh the added interaction step.
+Smallest test: Replay twenty synthetic incomplete commands including reversals; measure premature actions, time to stable target, and extra confirmation effort across two policies.
+Status: Untested
+
+### I007 — Test the outcome separately from choosing the action
+
+Idea: Give a fast browser actor a separate, task-specific assertion after each meaningful action; preserve a failure trace instead of treating a successful click as task completion.
+Inspired by: P013's bounded actions and P016's app-testing demo; P006 suggests searchable failure signals.
+Unknown: Whether a separate check detects failures the actor misses without merely repeating its assumptions.
+Smallest test: Use a local form with a deliberately broken save handler; compare click completion with an assertion that checks the saved record. Record false passes and added latency.
 Status: Untested
 
 Proposed combinations remain hypotheses until tested.

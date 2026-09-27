@@ -66,13 +66,13 @@ function render() {
   const parts=location.hash.slice(1).split('/'), view=['projects','connections','ideas'].includes(parts[0])?parts[0]:'projects';
   document.querySelectorAll('[data-view]').forEach(a=>{if(a.dataset.view===view)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});
   if(view!=='projects') {
-    main.innerHTML=`<div class="page-heading"><p class="eyebrow">THE GROWING PICTURE</p><h1>${view==='ideas'?'Ideas to explore':'Connections'}</h1><p>${view==='ideas'?'Possibilities, assumptions, and the next small experiment.':'Relationships between projects, with their evidence and unknowns.'}</p></div><div class="synthesis">${synthesisRows(data[view] || '', view)}</div>`;
+    main.innerHTML=`<div class="page-heading"><p class="eyebrow">THE GROWING PICTURE</p>${view==='ideas'?'<h1>Ideas to explore</h1>':''}<p>${view==='ideas'?'Possibilities, assumptions, and the next small experiment.':'Relationships between projects, with their evidence and unknowns.'}</p></div><div class="synthesis">${synthesisRows(data[view] || '', view)}</div>`;
     bindSynthesisRows();
     return;
   }
   if(parts[1] && data.projects.some(p=>p.id===parts[1])) {selected=parts[1];query='';mechanism='';}
   const mechanisms=[...new Set(data.projects.flatMap(p=>p.mechanisms))].sort();
-  main.innerHTML=`<div class="page-heading"><p class="eyebrow">FIELD NOTES</p><h1>Projects</h1><p>Smart uses of Jev. What they do, how they work, and what we can learn.</p></div><div class="controls"><label class="search">Search research<input id="search" type="search" placeholder="Project, mechanism, or question…" value="${escapeHTML(query)}"></label><label>Mechanism<select id="mechanism"><option value="">All mechanisms</option>${mechanisms.map(m=>`<option ${m===mechanism?'selected':''}>${escapeHTML(m)}</option>`).join('')}</select></label></div><p id="result-count" class="result-count" aria-live="polite"></p><div class="project-layout"><div id="project-list" class="project-list" aria-label="Project results"></div></div>`;
+  main.innerHTML=`<div class="page-heading"><p class="eyebrow">FIELD NOTES</p><p>Smart uses of Jev. What they do, how they work, and what we can learn.</p></div><div class="controls"><label class="search">Search research<input id="search" type="search" placeholder="Project, mechanism, or question…" value="${escapeHTML(query)}"></label><label>Mechanism<select id="mechanism"><option value="">All mechanisms</option>${mechanisms.map(m=>`<option ${m===mechanism?'selected':''}>${escapeHTML(m)}</option>`).join('')}</select></label></div><p id="result-count" class="result-count" aria-live="polite"></p><div class="project-layout"><div id="project-list" class="project-list" aria-label="Project results"></div></div>`;
   document.querySelector('#search').addEventListener('input',e=>{query=e.target.value;renderResults();});
   document.querySelector('#mechanism').addEventListener('change',e=>{mechanism=e.target.value;renderResults();});
   renderResults();

@@ -4,15 +4,21 @@ A shared index of interesting Jev projects, connections between them, and ideas 
 
 ## Projects
 
-One project recorded. Next project ID: `P002`.
+Two projects recorded. Next project ID: `P003`.
 
 | ID | Project | What makes it interesting | Mechanisms | Research task | Source |
 | --- | --- | --- | --- | --- | --- |
 | P001 | [jevgrep](research/P001-jevgrep.md) | Uses Jev to select source context before a coding agent implements a change; published cost savings include a solve-rate tradeoff. | Hierarchical discovery; relevance classification; source selection | This inventory task; task link pending | [X announcement](https://x.com/dzhng/status/2103920741481848861), [repository](https://github.com/dzhng/jevgrep) |
+| P002 | [Transaction categorization prototype](research/P002-transaction-categorization.md) | Makes transaction classification visible through animated cards and spending charts; creator explicitly says there is no real Jev integration. | Transaction classification concept; progressive visualization | This inventory task; task link pending | [X announcement](https://x.com/willdjthrill/status/2103556432729870627), [creator clarification](https://x.com/willdjthrill/status/2103852099243327706) |
 
 ## Connections
 
-No connections recorded yet. Add an entry when there is a concrete reason to connect projects.
+### P001 ↔ P002 — Classification before downstream action
+
+Reason: P001 selects relevant code for a coding agent; P002 proposes categories for transactions and displays spending summaries. Both illustrate a judgment step feeding another action or presentation.
+Basis: Our conceptual inference from P001's published architecture and P002's design prototype. P002 has no live Jev integration according to its creator.
+Evidence: [P001 research](research/P001-jevgrep.md), [P002 research](research/P002-transaction-categorization.md), [P001 architecture](https://github.com/dzhng/jevgrep/blob/main/docs/architecture.md), [P002 clarification](https://x.com/willdjthrill/status/2103852099243327706).
+Unknowns: P002's actual classifier contract and executor are unspecified. Shared conceptual structure does not establish compatible code or comparable performance.
 
 Use this format:
 
@@ -32,6 +38,14 @@ Idea: After selecting source context, check whether named dependencies or relate
 Inspired by: P001's separation of useful file locations from selected source; its documented risk of incomplete discovery. This is a research direction, not a claim of novelty over jevgrep's existing follow-up behavior.
 Unknown: Whether an additional pass improves coverage enough to justify its cost.
 Smallest test: On one public repository question with a known cross-file dependency, compare selected evidence with and without the extra check; record missed dependencies, total retrieval cost, and downstream correctness.
+Status: Untested
+
+### I002 — Show evidence and unresolved cases alongside each category
+
+Idea: For transaction categorization, retain the original description beside a suggested category and leave ambiguous cases explicitly unresolved instead of making the chart appear complete.
+Inspired by: P001's separation of useful leads from confident excerpts and its incomplete-discovery reporting; P002's visible classification-to-summary concept.
+Unknown: Whether the additional evidence and review state improve users' ability to correct misclassification. This is a design hypothesis, not an established novel invention.
+Smallest test: Use ten synthetic transaction descriptions, including ambiguous merchants, to compare forced categorization with a review state. Record incorrect accepted labels and review effort; do not use real financial data for the first test.
 Status: Untested
 
 Proposed combinations remain hypotheses until tested.

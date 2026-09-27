@@ -50,7 +50,7 @@ These are published results, not our measurements. The project is catalogued as 
 
 ## Connections and questions
 
-- No cross-project connection yet: this is the first inventory entry.
+- P002 provides a conceptual comparison: code-context selection versus transaction categorization. P002 is a design prototype, not a working Jev integration; see the evidence-qualified connection in [the index](../INDEX.md).
 - Candidate to investigate later: `keltokhy/jgrep`, mentioned by another participant in the announcement replies; not reviewed or accepted as a connection.
 - What is the total cost including Jev on a fresh task set?
 - How does relevance selection affect missed dependencies and final correctness?

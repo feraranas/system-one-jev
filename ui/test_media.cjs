@@ -1,0 +1,12 @@
+const fs = require('fs'), vm = require('vm'), assert = require('assert');
+const context = vm.createContext({URL, location:{origin:'http://localhost:8765'}, document:{querySelector:()=>({}),querySelectorAll:()=>[]}});
+vm.runInContext(fs.readFileSync('ui/app.js','utf8').split("document.querySelector('#refresh').addEventListener")[0],context);
+const run = expression => vm.runInContext(expression,context);
+assert(run(`markdown('![photo](assets/a.png)', 'research/P001.md')`).includes('src="http://localhost:8765/research/assets/a.png"'));
+assert(run(`markdown('![photo](<assets/a b.png>)', 'research/P001.md')`).includes('a%20b.png'));
+assert(!run(`markdown('![bad](javascript:evil)', 'research/P001.md')`).includes('<img'));
+assert(run(`markdown('![photo](https://example.com/a.jpg)', 'research/P001.md')`).includes('referrerpolicy="no-referrer"'));
+assert(run('markdown("```mermaid\\ngraph LR\\n A-->B\\n```")').includes('class="mermaid-source"'));
+assert(!run('markdown("```js\\nconst a = 1;\\n```")').includes('mermaid-source'));
+assert(!run(`markdown('<script>alert(1)</script>')`).includes('<script>'));
+console.log('Markdown image, path, escaping, and code-fence checks passed.');

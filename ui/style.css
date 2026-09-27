@@ -60,3 +60,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .research-columns { grid-template-columns: 1fr; }
   .personal-notes { border-left: 0; border-top: 1px solid #aaa; padding: 16px 0 0; }
 }
+
+.research-image { display: block; max-width: 100%; height: auto; margin: 12px 0; }
+.research-diagram { margin: 16px 0; overflow-x: auto; }
+.research-diagram > svg { display: block; max-width: 100%; height: auto; }
+.research-diagram summary { cursor: pointer; font-size: 13px; }
+.diagram-error { font-size: 14px; }

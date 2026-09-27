@@ -8,32 +8,52 @@ function linkURL(value) {
   if (/^(?:\.\.\/)?INDEX\.md(?:#.*)?$/.test(value)) return value.endsWith('#connections') ? '#connections' : value.endsWith('#ideas-to-explore') ? '#ideas' : '#projects';
   return '';
 }
-function inline(value) {
+function imageURL(value, sourcePath) {
+  try {
+    const url = new URL(value, new URL(sourcePath, location.origin + '/'));
+    if (!['http:', 'https:'].includes(url.protocol)) return '';
+    if (url.origin === location.origin && !url.pathname.startsWith('/research/')) return '';
+    return url.href;
+  } catch { return ''; }
+}
+function inline(value, sourcePath = 'INDEX.md') {
+  const images = [];
+  value = value.replace(/!\[([^\]]*)\]\((<[^>]+>|[^\s)]+)(?:\s+"([^"]*)")?\)/g, (_, alt, path, title) => {
+    const url = imageURL(path.replace(/^<|>$/g, ''), sourcePath);
+    images.push(url ? `<img class="research-image" src="${escapeHTML(url)}" alt="${escapeHTML(alt)}" ${title ? `title="${escapeHTML(title)}"` : ''} loading="lazy" referrerpolicy="no-referrer">` : escapeHTML(alt));
+    return `\u0000IMAGE${images.length - 1}\u0000`;
+  });
   return escapeHTML(value).replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_, title, href) => {
     const url = linkURL(href.replace(/&amp;/g, '&'));
     return url ? `<a href="${escapeHTML(url)}" ${url.startsWith('http') ? 'target="_blank" rel="noopener noreferrer"' : ''}>${title}</a>` : title;
-  }).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  }).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\u0000IMAGE(\d+)\u0000/g, (_, i) => images[Number(i)] || '');
 }
-function markdown(text) {
+function markdown(text, sourcePath = 'INDEX.md') {
+  const format = value => inline(value, sourcePath);
   const lines = text.split('\n'); let html = '', list = '', code = false, table = false;
   const close = () => { if (list) {html += `</${list}>`; list = '';} if (table) {html += '</tbody></table></div>'; table = false;} };
   for (let i=0; i<lines.length; i++) {
     const line = lines[i];
-    if (line.startsWith('```')) { close(); html += code ? '</code></pre>' : '<pre><code>'; code = !code; continue; }
+    if (line.startsWith('```')) {
+      close();
+      if (code) { html += '</code></pre>'; code = false; }
+      else { code = true; html += line.trim() === '```mermaid' ? '<pre class="mermaid-source"><code>' : '<pre><code>'; }
+      continue;
+    }
     if (code) {html += escapeHTML(line) + '\n'; continue;}
     if (!line.trim()) {close(); continue;}
     if (line.startsWith('|')) {
       if (/^\|[\s:|\-]+\|\s*$/.test(line)) continue;
       const cells = line.replace(/^\||\|\s*$/g, '').split('|');
-      if (!table) {close(); html += '<div class="table-wrap"><table><thead><tr>' + cells.map(c=>`<th>${inline(c.trim())}</th>`).join('') + '</tr></thead><tbody>'; table=true;}
-      else html += '<tr>'+cells.map(c=>`<td>${inline(c.trim())}</td>`).join('')+'</tr>';
+      if (!table) {close(); html += '<div class="table-wrap"><table><thead><tr>' + cells.map(c=>`<th>${format(c.trim())}</th>`).join('') + '</tr></thead><tbody>'; table=true;}
+      else html += '<tr>'+cells.map(c=>`<td>${format(c.trim())}</td>`).join('')+'</tr>';
       continue;
     }
     const heading = line.match(/^(#{1,6}) (.+)$/);
-    if (heading) {close(); const level=Math.min(heading[1].length+1,6); html += `<h${level}>${inline(heading[2])}</h${level}>`; continue;}
+    if (heading) {close(); const level=Math.min(heading[1].length+1,6); html += `<h${level}>${format(heading[2])}</h${level}>`; continue;}
     const item=line.match(/^([-*]|\d+\.) (.+)$/);
-    if (item) {const type=/\d/.test(item[1])?'ol':'ul'; if(list!==type){close();html+=`<${type}>`;list=type;} html+=`<li>${inline(item[2])}</li>`;continue;}
-    close(); html += `<p>${inline(line)}</p>`;
+    if (item) {const type=/\d/.test(item[1])?'ol':'ul'; if(list!==type){close();html+=`<${type}>`;list=type;} html+=`<li>${format(item[2])}</li>`;continue;}
+    close(); html += `<p>${format(line)}</p>`;
   }
   close(); if(code) html+='</code></pre>'; return html;
 }
@@ -59,6 +79,7 @@ function bindSynthesisRows() {
       row.querySelector('.row-toggle').textContent = expanded ? '−' : '+';
       document.getElementById(row.getAttribute('aria-controls')).hidden = !expanded;
     });
+    renderDiagrams(main);
   }));
 }
 function render() {
@@ -68,6 +89,7 @@ function render() {
   if(view!=='projects') {
     main.innerHTML=`<div class="synthesis">${synthesisRows(data[view] || '', view)}</div>`;
     bindSynthesisRows();
+    renderDiagrams(main);
     return;
   }
   if(parts[1] && data.projects.some(p=>p.id===parts[1])) {selected=parts[1];query='';mechanism='';}
@@ -84,10 +106,11 @@ function renderResults() {
   document.querySelector('#project-list').innerHTML=projects.length?projects.map(p=>`<section class="project-entry"><button class="project-card ${p.id===selected?'selected':''}" id="toggle-${escapeHTML(p.id)}" data-id="${escapeHTML(p.id)}" aria-expanded="${p.id===selected}" aria-controls="research-${escapeHTML(p.id)}"><span class="project-id">${escapeHTML(p.id)}</span><span class="row-content"><span class="project-title">${escapeHTML(p.name)}</span><span class="project-summary">${escapeHTML(p.summary)}</span><span class="tags">${p.mechanisms.map(m=>`<span>${escapeHTML(m)}</span>`).join('')}</span></span><span class="row-toggle" aria-hidden="true">${p.id===selected?'−':'+'}</span></button><article id="research-${escapeHTML(p.id)}" class="document" aria-labelledby="toggle-${escapeHTML(p.id)}" ${p.id===selected?'':'hidden'}>${p.id===selected?researchHTML(p):''}</article></section>`).join(''):'<div class="empty"><h2>No matching projects</h2><p>Try a different term or choose all mechanisms.</p><button id="clear">Clear filters</button></div>';
   document.querySelectorAll('[data-id]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.id;selected=selected===id?'':id;history.replaceState(null,'',selected?'#projects/'+selected:'#projects');renderResults();document.getElementById('toggle-'+id).focus({preventScroll:true});}));
   document.querySelectorAll('[data-notepad]').forEach(mountNotepad);
+  renderDiagrams(main);
   document.querySelector('#clear')?.addEventListener('click',()=>{query='';mechanism='';history.replaceState(null,'','#projects');render();});
 }
 function researchHTML(project) {
-  return `<div class="research-columns"><div class="research-body"><div class="note-meta"><span>RESEARCH NOTE · ${escapeHTML(project.id)}</span><span>${escapeHTML(project.path||'Note pending')}</span></div><div class="detail-status">${escapeHTML(project.status)}</div>${markdown(project.research)}<footer class="note-footer"><strong>Research task</strong><p>${inline(project.task)}</p><strong>Original sources</strong><p>${inline(project.sources)}</p></footer></div><aside class="personal-notes" data-notepad="${escapeHTML(project.id)}" aria-label="My notes for ${escapeHTML(project.id)}"></aside></div>`;
+  return `<div class="research-columns"><div class="research-body"><div class="note-meta"><span>RESEARCH NOTE · ${escapeHTML(project.id)}</span><span>${escapeHTML(project.path||'Note pending')}</span></div><div class="detail-status">${escapeHTML(project.status)}</div>${markdown(project.research, project.path)}<footer class="note-footer"><strong>Research task</strong><p>${inline(project.task)}</p><strong>Original sources</strong><p>${inline(project.sources)}</p></footer></div><aside class="personal-notes" data-notepad="${escapeHTML(project.id)}" aria-label="My notes for ${escapeHTML(project.id)}"></aside></div>`;
 }
 async function load() {
   const button=document.querySelector('#refresh');button.disabled=true;button.textContent='Refreshing…';
@@ -160,3 +183,43 @@ window.addEventListener('beforeunload', event => {
     event.preventDefault();event.returnValue='';
   }
 });
+
+let mermaidLoader;
+let diagramSequence = 0;
+function loadMermaid() {
+  if (!mermaidLoader) mermaidLoader = import('https://cdn.jsdelivr.net/npm/mermaid@11.12.0/dist/mermaid.esm.min.mjs').then(({default: mermaid}) => {
+    mermaid.initialize({startOnLoad:false, securityLevel:'strict', suppressErrorRendering:true, theme:'neutral', fontFamily:'Arial, sans-serif'});
+    return mermaid;
+  }).catch(error => {mermaidLoader = null; throw error;});
+  return mermaidLoader;
+}
+async function renderDiagrams(root) {
+  for (const source of root.querySelectorAll('.mermaid-source')) {
+    if (source.dataset.rendering || source.closest('[hidden]')) continue;
+    source.dataset.rendering = 'true';
+    const code = source.textContent;
+    try {
+      const mermaid = await loadMermaid();
+      if (!source.isConnected) continue;
+      const {svg} = await mermaid.render('notebook-diagram-' + (++diagramSequence), code);
+      if (!source.isConnected) continue;
+      const figure = document.createElement('figure');
+      figure.className = 'research-diagram';
+      figure.innerHTML = svg;
+      const details = document.createElement('details');
+      const summary = document.createElement('summary');
+      summary.textContent = 'Diagram source';
+      const sourceCopy = source.cloneNode(true);
+      sourceCopy.classList.remove('mermaid-source');
+      details.append(summary, sourceCopy);
+      figure.append(details);
+      source.replaceWith(figure);
+    } catch {
+      if (!source.isConnected) continue;
+      const message = document.createElement('p');
+      message.className = 'diagram-error';
+      message.textContent = 'Diagram could not render. Check the Mermaid source below or refresh to retry loading.';
+      source.before(message);
+    }
+  }
+}

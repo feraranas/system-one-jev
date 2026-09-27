@@ -7,7 +7,7 @@ import sqlite3
 from notes import Notes, Conflict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, unquote
 
 ROOT = Path(__file__).resolve().parent.parent
 UI = ROOT / 'ui'
@@ -15,7 +15,21 @@ UI = ROOT / 'ui'
 
 def section(text, title):
     match = re.search(r'^## ' + re.escape(title) + r'\s*\n(.*?)(?=^## |\Z)', text, re.M | re.S)
-    return re.sub(r'```.*?```', '', match.group(1), flags=re.S).strip() if match else ''
+    return match.group(1).strip() if match else ''
+
+
+IMAGE_TYPES = {'.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+               '.gif': 'image/gif', '.webp': 'image/webp', '.avif': 'image/avif'}
+
+
+def image_file(url_path):
+    try:
+        path = (ROOT / unquote(url_path).lstrip('/')).resolve()
+        if path.is_relative_to(ROOT / 'research') and path.suffix.lower() in IMAGE_TYPES and path.is_file():
+            return path
+    except (OSError, ValueError):
+        pass
+    return None
 
 
 def inventory():
@@ -103,6 +117,17 @@ class Handler(BaseHTTPRequestHandler):
                 print(exc)
                 return
             mime = 'application/json; charset=utf-8'
+        elif path.startswith('/research/'):
+            file = image_file(path)
+            if file is None:
+                self.send_error(404)
+                return
+            try:
+                body = file.read_bytes()
+            except OSError:
+                self.send_error(404)
+                return
+            mime = IMAGE_TYPES[file.suffix.lower()]
         elif path in ('/', '/index.html', '/app.js', '/style.css'):
             name = 'index.html' if path == '/' else path[1:]
             body = (UI / name).read_bytes()

@@ -62,3 +62,29 @@ To back up or move notes, stop the server and copy `.local/notes.sqlite3` to a s
 This is a local, single-user feature. The server checks local Host/Origin values and remains bound to loopback. Hosting at a future domain requires authentication, HTTPS, a production server, persistent storage, and backups; DNS alone does not make this local server ready for public use. The existing Markdown inventory and SQLite notes can both move to that server.
 
 Validation: `python3 -m unittest discover -s ui -p 'test_*.py'` tests persistence, project isolation, revision conflicts, and HTTP write boundaries using temporary databases.
+
+## Photos and Mermaid diagrams
+
+Research Markdown supports images using standard inline image syntax:
+
+```markdown
+![Screenshot of the demo](assets/P001-demo.png)
+```
+
+For `research/P001-jevgrep.md`, this resolves to `research/assets/P001-demo.png`. Create that folder and copy your image there. Paths with spaces can use angle brackets: `![Demo](<assets/demo screenshot.png>)`. Local PNG, JPEG, GIF, WebP, and AVIF files anywhere inside `research/` are supported. Direct HTTP(S) image URLs work too; they load from the external host. Images resize to fit the research column. Local SVG and arbitrary filesystem paths are not served.
+
+Diagrams use fenced Mermaid blocks:
+
+````markdown
+```mermaid
+flowchart LR
+  A[Discover project] --> B[Research]
+  B --> C[Connect ideas]
+```
+````
+
+Click **Refresh notes** after editing Markdown. Diagrams also work inside expanded Connections and Ideas entries in `INDEX.md`; image paths there are relative to the repository root (for example `research/assets/P001-demo.png`). Each diagram has an expandable source view. Invalid diagrams retain their source with an error message.
+
+Mermaid 11.12.0 loads on demand from jsDelivr and requires internet access on first load. Diagram rendering happens in the browser. If the library cannot load, the source remains readable. **My notes** is still a plain-text notepad, not a Markdown preview.
+
+Additional renderer checks: `node ui/test_media.cjs`.

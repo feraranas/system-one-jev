@@ -47,26 +47,27 @@ function render() {
   }
   if(parts[1] && data.projects.some(p=>p.id===parts[1])) {selected=parts[1];query='';mechanism='';}
   const mechanisms=[...new Set(data.projects.flatMap(p=>p.mechanisms))].sort();
-  main.innerHTML=`<div class="page-heading"><p class="eyebrow">FIELD NOTES</p><h1>Projects</h1><p>Smart uses of Jev. What they do, how they work, and what we can learn.</p></div><div class="controls"><label class="search">Search research<input id="search" type="search" placeholder="Project, mechanism, or question…" value="${escapeHTML(query)}"></label><label>Mechanism<select id="mechanism"><option value="">All mechanisms</option>${mechanisms.map(m=>`<option ${m===mechanism?'selected':''}>${escapeHTML(m)}</option>`).join('')}</select></label></div><p id="result-count" class="result-count" aria-live="polite"></p><div class="project-layout"><div id="project-list" class="project-list" aria-label="Project results"></div><article id="detail" class="document"></article></div>`;
+  main.innerHTML=`<div class="page-heading"><p class="eyebrow">FIELD NOTES</p><h1>Projects</h1><p>Smart uses of Jev. What they do, how they work, and what we can learn.</p></div><div class="controls"><label class="search">Search research<input id="search" type="search" placeholder="Project, mechanism, or question…" value="${escapeHTML(query)}"></label><label>Mechanism<select id="mechanism"><option value="">All mechanisms</option>${mechanisms.map(m=>`<option ${m===mechanism?'selected':''}>${escapeHTML(m)}</option>`).join('')}</select></label></div><p id="result-count" class="result-count" aria-live="polite"></p><div class="project-layout"><div id="project-list" class="project-list" aria-label="Project results"></div></div>`;
   document.querySelector('#search').addEventListener('input',e=>{query=e.target.value;renderResults();});
   document.querySelector('#mechanism').addEventListener('change',e=>{mechanism=e.target.value;renderResults();});
   renderResults();
 }
 function renderResults() {
   const projects=data.projects.filter(p=>(!mechanism||p.mechanisms.includes(mechanism))&&`${p.id} ${p.name} ${p.summary} ${p.mechanisms.join(' ')} ${p.research}`.toLowerCase().includes(query.toLowerCase().trim()));
-  if(!projects.some(p=>p.id===selected)) selected=projects[0]?.id || '';
+  if(!projects.some(p=>p.id===selected)) selected='';
   document.querySelector('#result-count').textContent=`${projects.length} of ${data.projects.length} projects`;
-  document.querySelector('#project-list').innerHTML=projects.length?projects.map(p=>`<button class="project-card ${p.id===selected?'selected':''}" data-id="${escapeHTML(p.id)}" aria-pressed="${p.id===selected}"><span class="project-id">${escapeHTML(p.id)}</span><h2>${escapeHTML(p.name)}</h2><p>${escapeHTML(p.summary)}</p><div class="tags">${p.mechanisms.map(m=>`<span>${escapeHTML(m)}</span>`).join('')}</div><span class="read-note">Read research ↗</span></button>`).join(''):'<div class="empty"><h2>No matching projects</h2><p>Try a different term or choose all mechanisms.</p><button id="clear">Clear filters</button></div>';
-  document.querySelectorAll('[data-id]').forEach(b=>b.addEventListener('click',()=>{selected=b.dataset.id;history.replaceState(null,'','#projects/'+selected);renderResults();}));
-  document.querySelector('#clear')?.addEventListener('click',()=>{query='';mechanism='';render();});
-  const project=projects.find(p=>p.id===selected);
-  document.querySelector('#detail').innerHTML=project?`<div class="note-meta"><span>RESEARCH NOTE · ${escapeHTML(project.id)}</span><span>${escapeHTML(project.path||'Note pending')}</span></div><div class="detail-status">${escapeHTML(project.status)}</div>${markdown(project.research)}<footer class="note-footer"><strong>Research task</strong><p>${inline(project.task)}</p><strong>Original sources</strong><p>${inline(project.sources)}</p></footer>`:'';
+  document.querySelector('#project-list').innerHTML=projects.length?projects.map(p=>`<section class="project-entry"><button class="project-card ${p.id===selected?'selected':''}" id="toggle-${escapeHTML(p.id)}" data-id="${escapeHTML(p.id)}" aria-expanded="${p.id===selected}" aria-controls="research-${escapeHTML(p.id)}"><span class="project-id">${escapeHTML(p.id)}</span><span class="row-content"><span class="project-title">${escapeHTML(p.name)}</span><span class="project-summary">${escapeHTML(p.summary)}</span><span class="tags">${p.mechanisms.map(m=>`<span>${escapeHTML(m)}</span>`).join('')}</span></span><span class="row-toggle" aria-hidden="true">${p.id===selected?'−':'+'}</span></button><article id="research-${escapeHTML(p.id)}" class="document" aria-labelledby="toggle-${escapeHTML(p.id)}" ${p.id===selected?'':'hidden'}>${p.id===selected?researchHTML(p):''}</article></section>`).join(''):'<div class="empty"><h2>No matching projects</h2><p>Try a different term or choose all mechanisms.</p><button id="clear">Clear filters</button></div>';
+  document.querySelectorAll('[data-id]').forEach(b=>b.addEventListener('click',()=>{const id=b.dataset.id;selected=selected===id?'':id;history.replaceState(null,'',selected?'#projects/'+selected:'#projects');renderResults();document.getElementById('toggle-'+id).focus({preventScroll:true});}));
+  document.querySelector('#clear')?.addEventListener('click',()=>{query='';mechanism='';history.replaceState(null,'','#projects');render();});
+}
+function researchHTML(project) {
+  return `<div class="note-meta"><span>RESEARCH NOTE · ${escapeHTML(project.id)}</span><span>${escapeHTML(project.path||'Note pending')}</span></div><div class="detail-status">${escapeHTML(project.status)}</div>${markdown(project.research)}<footer class="note-footer"><strong>Research task</strong><p>${inline(project.task)}</p><strong>Original sources</strong><p>${inline(project.sources)}</p></footer>`;
 }
 async function load() {
   const button=document.querySelector('#refresh');button.disabled=true;button.textContent='Refreshing…';
   try {
     const response=await fetch('/api/inventory');if(!response.ok)throw Error('Unable to load notes');
-    data=await response.json();document.querySelector('#project-count').textContent=data.projects.length;document.querySelector('#updated').textContent='Updated '+data.updated;render();document.querySelector('#status').textContent='Research notes refreshed.';
+    data=await response.json();document.querySelector('#project-count').textContent=data.projects.length;render();document.querySelector('#status').textContent='Research notes refreshed.';
   } catch(error) {main.innerHTML='<div class="empty"><h1>Could not load the notebook</h1><p>Check that INDEX.md is available, then try Refresh notes.</p></div>';document.querySelector('#status').textContent='Could not load research notes.';}
   finally {button.disabled=false;button.textContent='Refresh notes';}
 }
